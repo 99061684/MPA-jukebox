@@ -1,0 +1,22 @@
+
+database info
+
+table 1: genres {
+
+}
+
+table 2: songs {
+    name
+    artist/band
+    duration/length
+}
+
+table 3: playlists {
+    id
+    name
+}
+
+rules:
+table 1 minimum van 5 muziek genres
+table 3 tijdelijk totdat een gebruiker deze opslaat
+
