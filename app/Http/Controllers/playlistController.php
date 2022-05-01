@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Playlist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Validator;
+use App\Models\Song;
 
 class playlistController extends Controller
 {
@@ -27,40 +31,38 @@ class playlistController extends Controller
         return view('playlist.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    // public function store(Request $request)
-    // {
-    //     Playlist::create($request->all());
-    //     return view('home');
-    // }
-
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-          'name' => 'required|max:255',
-          'description' => 'required',
-          'public' => 'required',
-          'user_id' => 'required'
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|max:255',
+            'description' => 'required',
+            'public' => 'required'
         ]);
 
-        $save = new Playlist;
+        //if $request->songs is not empty, then add songs to playlist
+        if (!empty($request->songs)) {
+            $validator->after(function ($validator) use ($request) {
+                $playlist = new Playlist();
+                $playlist->name = $request->name;
+                $playlist->description = $request->description;
+                $playlist->public = $request->public;
+                $playlist->user_id = Auth::user()->id;
+                $playlist->save();
+                $playlist->songs()->attach($request->songs);
+            });
+        }
 
-        $save->name = $request->name;
-        $save->description = $request->description;
-        $save->public = $request->public;
-        $save->user_id = Auth::id();
-
-        $save->save();
-
-        // $emp->save();
-
-        return redirect('form')->with('status', 'Ajax Form Data Has Been validated and store into database');
-
+        if (!$validator->fails()) {
+            $playlist = new Playlist();
+            $playlist->name = $request->name;
+            $playlist->description = $request->description;
+            $playlist->public = $request->public;
+            $playlist->user_id = Auth::user()->id;
+            $playlist->save();
+            return view("home");
+        } else {
+            return Redirect::route('playlist.create')->with('inputData', $request->all())->withErrors($validator);
+        }
     }
 
     /**
@@ -71,7 +73,15 @@ class playlistController extends Controller
      */
     public function show($id)
     {
-        return $id;
+        // check if playlist exists and is owned by user
+        $songs = Song::all();
+        $playlist = Playlist::where('id', $id)->where('user_id', Auth::user()->id)->first();
+        if ($playlist != null) {
+            return view('playlist.show', ['playlist' => $playlist, 'songs' => $songs]);
+            // return view('playlist.test', ['playlist' => $playlist, 'songs' => $songs]);
+        } else {
+            return view('home', ['errors' => ['Playlist not found']]);
+        }
     }
 
     /**

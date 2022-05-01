@@ -15,13 +15,14 @@ class CreateSongsTable extends Migration
     {
         Schema::create('songs', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
+            $table->string('name');
             $table->string('artist')->nullable()->default(null);
             $table->string('band')->nullable()->default(null);
             $table->string('album')->nullable()->default(null);
             $table->time('duration');
             $table->string('song_path');
             $table->bigInteger('genre_id')->unsigned();
+            $table->string('unique_hash')->unique();
             $table->timestamps();
 
             $table->foreign('genre_id')->references('id')->on('genres')->onUpdate(

@@ -17,7 +17,7 @@ class CreatePlaylistsTable extends Migration
             $table->id();
             $table->string('name');
             $table->mediumText('description');
-            $table->boolean('public');
+            $table->boolean('public')->default(false);
             $table->bigInteger('user_id')->unsigned();
             $table->timestamps();
 

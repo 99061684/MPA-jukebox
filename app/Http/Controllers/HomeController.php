@@ -27,12 +27,11 @@ class HomeController extends Controller
     public function index()
     {
         if (!Session::has('spotify_client_id') && !Session::has('spotify_client_secret')) {
-            Session::put('spotify_client_id', '4bd586a7c9f7467589c32dbbe245e1fe');
-            Session::put('spotify_client_secret', '762c964d8e2b4b1db351f4785f440b87');
+            // put session spotify keys in session
         }
-        $Playlists = Playlist::where('user_id', Auth::id())->get();
+        $playlists = Playlist::where('user_id', Auth::id())->get();
         return view('home', [
-            'Playlists' => $Playlists,
+            'playlists' => $playlists
         ]);
     }
 }

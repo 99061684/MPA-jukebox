@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Song;
 use App\Models\Genre;
+use App\Models\SongSession;
+use App\Models\Playlist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class SongController extends Controller
 {
@@ -17,7 +21,7 @@ class SongController extends Controller
     public function overviewAll()
     {
         $genres = Genre::all();
-        $songs = Song::all();
+        $songs = Song::orderBy('name')->paginate(10);
         return view('Song.index', [
             'songs' => $songs,
             'genres' => $genres
@@ -27,7 +31,7 @@ class SongController extends Controller
     public function overview($genreid)
     {
         $genres = Genre::all();
-        $songs = Song::where('genre_id', $genreid)->get();
+        $songs = Song::where('genre_id', $genreid)->orderBy('name')->paginate(10);
         return view('Song.index', [
             'songs' => $songs,
             'genres' => $genres,
@@ -37,8 +41,9 @@ class SongController extends Controller
 
     public function sortandsearch(Request $request)
     {
+        $genres = Genre::all();
         if ($request->has('search')) {
-            Session::put('sortandsearch.search', $request->input('search'));
+            Session::put('sortandsearch.search', trim($request->input('search')));
         } else if (!Session::has('sortandsearch.search')) {
             Session::put('sortandsearch.search', '');
         }
@@ -53,7 +58,7 @@ class SongController extends Controller
             Session::put('sortandsearch.sort', 'name');
         }
         if ($request->has('order')) {
-            Session::put('sortandsearch.sort', $request->input('order'));
+            Session::put('sortandsearch.order', $request->input('order'));
         } else if (!Session::has('sortandsearch.order')) {
             Session::put('sortandsearch.order', 'asc');
         }
@@ -76,79 +81,83 @@ class SongController extends Controller
                 return $query->where('genre_id', $genreid);
             })
             ->orderBy($sort, $order)
-            ->get();
-        $genres = Genre::all();
+            ->paginate(10);
         return view('Song.index', [
             'songs' => $songs,
             'genres' => $genres,
             'genreid' => $genreid,
-            'search' => $search,
+            'search' => $searchstring,
             'sort' => $sort,
             'order' => $order
         ]);
     }
 
-    public function sort(Request $request)
+    public function selectSong(Request $request)
     {
-        Session::put('sortandsearch.sort',$request->sort);
-        Session::put('sortandsearch.order',$request->order);
-        $genres = Genre::all();
-        if ($request->has('sort') && $request->has('order') && $request->has('genreid') && $request->genreid !== null) {
-            $songs = Song::where('genre_id', $request->genreid)->orderBy($request->sort, $request->order)->get();
-        } else if ($request->has('sort') && $request->has('order')) {
-            $songs = Song::orderBy($request->sort, $request->order)->get();
-        }  else if ($request->has('sort') && !$request->has('order')) {
-            $songs = Song::orderBy($request->sort, 'asc')->get();
-        } else {
-            $songs = Song::all();
-        }
-        return view('Song.index', [
-            'songs' => $songs,
-            'genres' => $genres,
-            'genreid' => $request->genreid,
-            'sort' => $request->sort,
-            'order' => $request->order
+        $validator = Validator::make($request->all(), [
+            'songid' => 'required|integer|exists:songs,id'
         ]);
+        if (!$validator->fails()) {
+            $songid = $request->input('songid');
+            SongSession::initlilize();
+            if (SongSession::checkSong($songid)) {
+                SongSession::removeSongId($songid);
+            } else {
+                SongSession::addSongId($songid);
+            }
+        }
+        return redirect()->back();
     }
 
-    public function search(Request $request)
+    // addtoplaylist
+    public function addtoplaylist(Request $request)
     {
-        Session::put('sortandsearch.search',$request->search);
-        Session::put('sortandsearch.genreid',$request->genreid);
-        $genres = Genre::all();
-        if ($request->has('search') && $request->has('genreid') && $request->genreid !== null) {
-            $search = explode(' ', $request->search);
-            $songs = Song::where('genre_id', $request->genreid)->where(function ($query) use ($search) {
-                foreach ($search as $word) {
-                    if(strlen($word) > 2) {
-                        $query->orWhere('name', 'like', '%' . $word . '%');
-                        $query->orWhere('artist', 'like', '%' . $word . '%');
-                        $query->orWhere('band', 'like', '%' . $word . '%');
-                        $query->orWhere('album', 'like', '%' . $word . '%');
-                    }
-                }
-            })->get();
-        } else if ($request->has('search')) {
-            $search = explode(' ', $request->search);
-            $songs = Song::where(function ($query) use ($search) {
-                foreach ($search as $word) {
-                    $query->orWhere('name', 'like', '%' . $word . '%');
-                    $query->orWhere('artist', 'like', '%' . $word . '%');
-                    $query->orWhere('band', 'like', '%' . $word . '%');
-                    $query->orWhere('album', 'like', '%' . $word . '%');
-                }
-            })->get();
-        } else if ($request->has('genreid') && $request->genreid !== null) {
-            $songs = Song::where('genre_id', $request->genreid)->get();
-        } else {
-            $songs = Song::all();
+        //check if song exists
+        $song = Song::where('id', $request->songid)->first();
+        if ($song === null) {
+            return redirect()->back()->with('error', 'Song not found');
         }
-        return view('Song.index', [
-            'songs' => $songs,
-            'genres' => $genres,
-            'genreid' => $request->genreid,
-            'search' => $request->search
-        ]);
+        //check if playlist exists
+        $playlist = Playlist::where('id', $request->playlistid)->first();
+        if ($playlist === null) {
+            return redirect()->back()->with('error', 'Playlist not found');
+        }
+        //check if playlist is owned by user
+        if ($playlist->user_id !== Auth::id()) {
+            return redirect()->back()->with('error', 'You are not allowed to add songs to this playlist');
+        }
+
+        // check playlist with song
+        if ($song->playlists->contains($playlist)) {
+            return redirect()->back()->with('error', 'Song is already in playlist');
+        }
+        $song->playlists()->attach($playlist->id);
+        return redirect()->back()->with('success', 'Song added to playlist');
+    }
+
+    // removefromplaylist
+    public function removefromplaylist(Request $request)
+    {
+        //check if song exists
+        $song = Song::where('id', $request->songid)->first();
+        if ($song === null) {
+            return redirect()->back()->with('error', 'Song not found');
+        }
+        //check if playlist exists
+        $playlist = Playlist::where('id', $request->playlistid)->first();
+        if ($playlist === null) {
+            return redirect()->back()->with('error', 'Playlist not found');
+        }
+        //check if playlist is owned by user
+        if ($playlist->user_id !== Auth::id()) {
+            return redirect()->back()->with('error', 'You are not allowed to remove songs from this playlist');
+        }
+        // check if song is not in playlist
+        if (!playlist::with('songs')->where('user_id', Auth::id())->get()->contains($playlist)) {
+            return redirect()->back()->with('error', 'Song is not in playlist');
+        }
+        $song->playlists()->detach($playlist->id);
+        return redirect()->back()->with('success', 'Song removed from playlist');
     }
 
     /**
@@ -180,7 +189,6 @@ class SongController extends Controller
      */
     public function show($id)
     {
-
         return view('Song.show', [
             'song' => Song::find($id)
         ]);

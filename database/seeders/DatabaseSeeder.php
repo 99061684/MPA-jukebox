@@ -3,11 +3,6 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Database\Seeders\UserTableSeeder;
-use Database\Seeders\SongsTableSeeder;
-use Database\Seeders\GenresTableSeeder;
-use Database\Seeders\PlaylistTableSeeder;
-use Database\Seeders\PlaylistsSongsTableSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -22,6 +17,6 @@ class DatabaseSeeder extends Seeder
         $this->call(SongsTableSeeder::class);
         $this->call(UserTableSeeder::class);
         $this->call(PlaylistTableSeeder::class);
-        $this->call(PlaylistsSongsTableSeeder::class);
+        $this->call(PlaylistSongTableSeeder::class);
     }
 }
