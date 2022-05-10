@@ -6,6 +6,7 @@ use App\Models\SongSession;
 ?>
 <div class="container">
     <h1>Selected songs</h1>
+    <a href="{{ route('playlist.create') }}" class="btn btn-primary">Create playlist</a>
     <table class="table table-bordered table-responsive">
         <caption>List of selected songs</caption>
         <thead class="thead-dark">
@@ -49,7 +50,7 @@ use App\Models\SongSession;
             @endif
 
         </tbody>
-      </table>
+    </table>
 
     <iframe id="Songplayer" style="border-radius:12px" src="https://open.spotify.com/embed/track/3XVozq1aeqsJwpXrEZrDJ9?utm_source=generator" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
 </div>

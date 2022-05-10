@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Support\Facades\Session;
 
-
 class SongSession
 {
     private const SESSION_KEY_NAME = 'playlistSongs';
@@ -87,6 +86,27 @@ class SongSession
         }, $songs);
         return $songModels;
     }
+
+    public static function getSongsid()
+    {
+        self::initlilize();
+        $songs = Session::get(self::SESSION_KEY_NAME);
+        if ($songs === null) {
+            return [];
+        }
+        return $songs;
+    }
+
+    public static function hasSongs()
+    {
+        self::initlilize();
+        $songs = Session::get(self::SESSION_KEY_NAME);
+        if (empty($songs)) {
+            return false;
+        }
+        return true;
+    }
+
 
     public static function initlilize()
     {

@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\PlaylistSong;
 use Illuminate\Database\Seeder;
+use App\Models\Playlist;
+use App\Models\Song;
 
 class PlaylistSongTableSeeder extends Seeder
 {
@@ -14,19 +15,27 @@ class PlaylistSongTableSeeder extends Seeder
      */
     public function run()
     {
-        // $data = [
-        //     [
-        //         'playlist_id' => 1,
-        //         'song_id' => 1
-        //     ],
-        //     [
-        //         'playlist_id' => 1,
-        //         'song_id' => 2
-        //     ]
-        // ];
 
-        // foreach ($data as $key => $value) {
-        //     PlaylistSong::create($value);
-        // }
+        try {
+            $playlist = Playlist::where('name', '=', 'Playlist 1')->get()->first();
+            $songs = [
+                [
+                    "name" => 'bad guy',
+                ],
+                [
+                    "name" => 'Dynamite',
+                ],
+            ];
+            if ($playlist instanceof Playlist) {
+                foreach ($songs as $key => $value) {
+                    $song = Song::where('name', '=', $value['name'])->get()->first();
+                    if ($song instanceof Song) {
+                        $playlist->songs()->attach($song->id);
+                    }
+                }
+            }
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }

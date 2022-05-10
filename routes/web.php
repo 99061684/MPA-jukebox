@@ -20,15 +20,6 @@ use App\Http\Controllers\playlistController;
 |
 */
 
-// Route::resource('JukeBox', JukeBoxController::class);
-
-// Multiple HTTP verbs
-// Route::match(['GET', 'POST'], 'JukeBox', [JukeBoxController::class, 'index']);
-// Route::any('JukeBox', [JukeBoxController::class, 'index']);
-
-// Return Vieuw
-// Route::view('/', 'home', []);
-
 Route::group(['middleware' => ['auth']], function() { // routes when user is logged in
     Route::prefix('/song')->group(function () {
         Route::get('/', [SongController::class, 'overviewAll'])->name('song.overviewAll');
@@ -49,6 +40,8 @@ Route::group(['middleware' => ['auth']], function() { // routes when user is log
         Route::get('/', [playlistController::class, 'create'])->name('playlist.create');
         Route::post('/', [playlistController::class, 'store'])->name('playlist.store');
         Route::get('/{id}', [playlistController::class, 'show'])->whereNumber('id')->name('playlist.show');
+        Route::post('/addtoplaylist/', [playlistController::class, 'addtoplaylist'])->name('playlist.addSongs');
+        Route::post('/removefromplaylist/', [playlistController::class, 'removefromplaylist'])->name('playlist.removeSongs');
     });
 
     Route::get('/home', [HomeController::class, 'index'])->name('home');

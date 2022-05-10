@@ -1,7 +1,6 @@
 const Player = document.getElementById('Songplayer');
 const Player2 = document.getElementById('Songplayer2');
 const playsongbuttons = document.getElementsByClassName('playbuttonSong');
-// const playsongbuttons2 = document.getElementsByClassName('playbuttonSong2');
 
 function playsong(button) {
     console.log(button.dataset.songUrl);
@@ -23,12 +22,6 @@ function playsong(button) {
     }
 }
 
-// function playsong2(button) {
-//     console.log(button.dataset.songUrl);
-//     Player2.src = button.dataset.songUrl;
-//     Player2.play();
-// }
-
 for (let i = 0; i < playsongbuttons.length; i++) {
     let self = playsongbuttons[i];
 
@@ -40,121 +33,66 @@ for (let i = 0; i < playsongbuttons.length; i++) {
     }, false);
 }
 
-// for (let i = 0; i < playsongbuttons2.length; i++) {
-//     let self = playsongbuttons2[i];
+// make player play playlist of songs
+function playplaylist(playlist) {
+    let playlistSongsArray = playlist;
+    let playlistSongsArrayLength = playlistSongsArray.length;
+    let playlistSongsArrayIndex = 0;
+    let playlistSongsArrayCurrent = playlistSongsArray[playlistSongsArrayIndex];
+    let playlistSongsArrayCurrentUrl = playlistSongsArrayCurrent.slice(playlistSongsArrayCurrent.lastIndexOf('/') + 1, playlistSongsArrayCurrent.length);
 
-//     self.addEventListener('click', function (event) {
-//         // prevent browser's default action
-//         event.preventDefault();
+    var Regex1 = new RegExp(/embed/gi);
+    var Regex2 = new RegExp(/open.spotify.com/gi);
 
-//         playsong2(this);
-//     }, false);
-// }
-
-
-// var player = new Spotify.Player({
-//     name: 'Jukebox',
-//     getOAuthToken: function(callback) {
-//         callback('{{ $token }}');
-//     }
-// });
-
-// // Error handling
-// player.on('initialization_error', function(e) {
-//     console.error(e);
-// });
-// player.on('authentication_error', function(e) {
-//     console.error(e);
-// });
-// player.on('account_error', function(e) {
-//     console.error(e);
-// });
-// player.on('playback_error', function(e) {
-//     console.error(e);
-// });
-
-// // Playback status updates
-// player.on('player_state_changed', function(state) {
-//     console.log(state);
-// });
-
-// // Ready
-// player.on('ready', function(data) {
-//     console.log('Ready with Device ID', data.device_id);
-
-//     player.play({
-//         device_id: data.device_id,
-//         uris: ['spotify:track:3XVozq1aeqsJwpXrEZrDJ9']
-//     });
-// });
-
-// // Connect to the player!
-// player.connect('{{ $player_id }}');
+    if(!Regex1.test(playlistSongsArrayCurrent)){
+        if (!Regex2.test(playlistSongsArrayCurrent)) {
+            let scr = Player2.src.slice(0, Player2.src.lastIndexOf('songs') + "songs".length + 1) + playlistSongsArrayCurrentUrl;
+            Player2.src = scr;
+            Player2.play();
+        } else {
+            console.log("spotify");
+            Player.src = "https://open.spotify.com/embed/track/" + playlistSongsArrayCurrentUrl;
+        }
+    } else {
+        Player.src = playlistSongsArrayCurrent;
+    }
 
 
-// authenticate spotify api
-// var client_id = '{{ $spotify_client_id }}';
-// var redirect_uri = '{{ $redirect_uri }}';
+    // function onPlayerStateChange(event) {
+    //     if (event.data == YT.PlayerState.PLAYING && !done) {
+    //       setTimeout(stopVideo, 6000);
+    //       done = true;
+    //     }
+    //   }
+    // Player.onended = function() {
+    //     alert("The audio has ended");
+    // };
+    // check if player is ended
+    // Player.addEventListener('ended', function () {
+    //     console.log("ended");
+    //     playlistSongsArrayIndex++;
+    //     if (playlistSongsArrayIndex >= playlistSongsArrayLength) {
+    //         playlistSongsArrayIndex = 0;
+    //     }
+    //     playlistSongsArrayCurrent = playlistSongsArray[playlistSongsArrayIndex];
+    //     playlistSongsArrayCurrentUrl = playlistSongsArrayCurrent.slice(playlistSongsArrayCurrent.lastIndexOf('/') + 1, playlistSongsArrayCurrent.length);
 
-// const SPACE_DELIMETER = '%20';
-// const SPOTIFY_AUTOHORIZE_URL = 'https://accounts.spotify.com/authorize';
-// const SCOPES = ['user-read-private', 'user-read-email'];
-// const SCOPES_URL_PARAM = SCOPES.join(SPACE_DELIMETER);
+    //     if(!Regex1.test(playlistSongsArrayCurrent)){
+    //         if (!Regex2.test(playlistSongsArrayCurrent)) {
+    //             let scr = Player2.src.slice(0, Player2.src.lastIndexOf('songs') + "songs".length + 1) + playlistSongsArrayCurrentUrl;
+    //             Player2.src = scr;
+    //             Player2.play();
+    //         } else {
+    //             console.log("spotify");
+    //             Player.src = "https://open.spotify.com/embed/track/" + playlistSongsArrayCurrentUrl;
+    //         }
+    //     } else {
+    //         Player.src = playlistSongsArrayCurrent;
+    //     }
+    // }, false);
 
-// // var stateKey = 'spotify_auth_state';
-// var state = generateRandomString(16);
-// // var scopes = 'user-read-private user-read-email';
 
-// function createSpotify_Autorization_URL() {
-//     var url = SPOTIFY_AUTOHORIZE_URL;
-//     url += '?response_type=token';
-//     url += '&client_id=' + encodeURIComponent(client_id);
-//     url += '&scope=' + encodeURIComponent(SCOPES_URL_PARAM);
-//     url += '&response_type=token';
-//     url += '&show_dialog=true';
-//     url += '&redirect_uri=' + encodeURIComponent(redirect_uri);
-//     url += '&state=' + encodeURIComponent(state);
-//     return url;
-// }
-
-// function authenticate() {
-//     var url = createSpotify_Autorization_URL();
-//     window.location = url;
-// }
-
-// //get token from url
-// function getHashParams() {
-//     var hashParams = {};
-//     var e, r = /([^&;=]+)=?([^&;]*)/g,
-//         q = window.location.hash.substring(1);
-//     while (e = r.exec(q)) {
-//         hashParams[e[1]] = decodeURIComponent(e[2]);
-//     }
-//     return hashParams;
-// }
-
-// //generate random string
-// function generateRandomString(length) {
-//     var text = '';
-//     var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-//     for (var i = 0; i < length; i++) {
-//         text += possible.charAt(Math.floor(Math.random() * possible.length));
-//     }
-//     return text;
-// }
-
-// authenticate();
-
-// var params = {
-//     client_id: client_id,
-//     response_type: 'token',
-//     redirect_uri: redirect_uri,
-//     scope: scopes,
-//     state: state
-// };
-
-// var url = 'https://accounts.spotify.com/authorize?' + $.param(params);
+}
 
 function authenticate() {
     var token = "{{Session::get('spotify_token')}}";

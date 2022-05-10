@@ -6,9 +6,9 @@ use App\Models\Playlist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Song;
+use App\Models\SongSession;
 
 class playlistController extends Controller
 {
@@ -36,33 +36,24 @@ class playlistController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|max:255',
             'description' => 'required',
-            'public' => 'required'
+            'public' => 'required|boolean',
+            'addSelected' => 'required|boolean'
         ]);
 
-        //if $request->songs is not empty, then add songs to playlist
-        if (!empty($request->songs)) {
-            $validator->after(function ($validator) use ($request) {
-                $playlist = new Playlist();
-                $playlist->name = $request->name;
-                $playlist->description = $request->description;
-                $playlist->public = $request->public;
-                $playlist->user_id = Auth::user()->id;
-                $playlist->save();
-                $playlist->songs()->attach($request->songs);
-            });
-        }
-
-        if (!$validator->fails()) {
-            $playlist = new Playlist();
-            $playlist->name = $request->name;
-            $playlist->description = $request->description;
-            $playlist->public = $request->public;
-            $playlist->user_id = Auth::user()->id;
-            $playlist->save();
-            return view("home");
-        } else {
+        if ($validator->fails()) {
             return Redirect::route('playlist.create')->with('inputData', $request->all())->withErrors($validator);
         }
+
+        $playlist = new Playlist();
+        $playlist->name = $request->name;
+        $playlist->description = $request->description;
+        $playlist->public = $request->public;
+        $playlist->user_id = Auth::user()->id;
+        $playlist->save();
+        if ($request->input('addSelected') == true) {
+            $playlist->songs()->attach(SongSession::getSongsid());
+        }
+        return (new HomeController)->index();
     }
 
     /**
@@ -74,13 +65,74 @@ class playlistController extends Controller
     public function show($id)
     {
         // check if playlist exists and is owned by user
-        $songs = Song::all();
         $playlist = Playlist::where('id', $id)->where('user_id', Auth::user()->id)->first();
-        if ($playlist != null) {
-            return view('playlist.show', ['playlist' => $playlist, 'songs' => $songs]);
-            // return view('playlist.test', ['playlist' => $playlist, 'songs' => $songs]);
+        if ($playlist == null) {
+            return response()->view('home', ['errors' => ['Playlist not found']]);
+        }
+        $songs = $playlist->songs()->orderBy('name', 'asc')->paginate(10);
+        $hasSongs = SongSession::hasSongs();
+        return response()->view('playlist.show', ['playlist' => $playlist, 'songs' => $songs, 'hasSongs' => $hasSongs]);
+    }
+
+    public function addtoplaylist(Request $request)
+    {
+        //validate playlistid required int and playlistid exists
+        $validator = Validator::make($request->all(), [
+            'playlistid' => 'required|integer|exists:playlists,id'
+        ]);
+        //if validation fails return to home with errors
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', ['Not a valid playlist id.']);
+        }
+        //check if playlist exists and is owned by user
+        $playlist = Playlist::where('id', $request->playlistid)->where('user_id', Auth::user()->id)->first();
+        if ($playlist == null) {
+            return redirect()->back()->with('error', ['Playlist not found.']);
+        }
+        $songs = SongSession::getSongsid();
+        $songsExist = true;
+        foreach ($songs as $song) {
+            if (Song::where('id', $song)->first() === null) {
+                $songsExist = false;
+                break;
+            }
+        }
+        // attach all songs to playlist
+        if ($songsExist) {
+            $playlist->songs()->attach($songs);
+            return redirect()->back()->with('success', 'Songs added to playlist');
         } else {
-            return view('home', ['errors' => ['Playlist not found']]);
+            return redirect()->back()->with('error', ['One or more songs do not exist']);
+        }
+    }
+
+    public function removefromplaylist(Request $request)
+    {
+        //validate playlistid required int and playlistid exists
+        //check if request has songid
+        if ($request->has('songid')) {
+            $validator = Validator::make($request->all(), [
+                'playlistid' => 'required|integer|exists:playlists,id',
+                'songid' => 'required|integer|exists:songs,id'
+            ]);
+
+            //if validation fails return to home with errors
+            if ($validator->fails()) {
+                return redirect()->back()->with('error', ['Not a valid playlist id or song id.']);
+            }
+        }
+
+        // detach songid from playlist
+        $playlist = Playlist::where('id', $request->playlistid)->where('user_id', Auth::user()->id)->first();
+        if ($playlist == null) {
+            return redirect()->back()->with('error', ['Playlist not found.']);
+        }
+        if ($request->has('songid')) {
+            $playlist->songs()->detach($request->songid);
+            return redirect()->back()->with('success', 'Songs removed from playlist');
+        } else {
+            // $playlist->songs()->detach();
+            return redirect()->back()->with('error', 'Song cannot be removed from playlist');
         }
     }
 

@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+<?php
+use App\Models\SongSession;
+?>
 @if ($errors->any())
     <div class="alert alert-danger">
         <ul>
@@ -30,6 +33,11 @@
                         <label for="public">Public</label>
                         <input type="hidden" name="public" value="0">
                         <input type="checkbox" value="1" id="public" name="public" @if (Session::has('inputData')) {{ Session::get('inputData')['public'] ? 'checked' : '' }} @endif>
+                    </div>
+                    <div class="form-group">
+                        <label for="addSelected">Add all selected songs to playlist</label>
+                        <input type="hidden" name="addSelected" value="0">
+                        <input type="checkbox" value="1" name="addSelected" {{ $hasSongs ? '' : 'disabled' }}>
                     </div>
                     <button type="submit" class="btn btn-primary">Create</button>
                 </form>
