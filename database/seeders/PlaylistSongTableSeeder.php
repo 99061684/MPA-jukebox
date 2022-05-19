@@ -20,10 +20,10 @@ class PlaylistSongTableSeeder extends Seeder
             $playlist = Playlist::where('name', '=', 'Playlist 1')->get()->first();
             $songs = [
                 [
-                    "name" => 'bad guy',
+                    "name" => 'bad guy'
                 ],
                 [
-                    "name" => 'Dynamite',
+                    "name" => 'Dynamite'
                 ],
             ];
             if ($playlist instanceof Playlist) {

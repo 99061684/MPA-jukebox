@@ -1,26 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
-<?php
-    if(!isset($playlists)) {
-        $playlists = [];
-    }
-?>
-{{-- @if ($errors->any())
-    <div class="alert alert-danger">
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif --}}
 <div class="container">
-    <p>
-        <a href="{{ route('genre.index') }}">Genres</a>
-    </p>
-</div>
-<div class="container">
+    <img class="full-size-image" src="{{ URL::asset('assets/images/home_music.jpg') }}" alt="home image">
     <div class="panel panel-default">
         <div class="panel-heading">
             <h3 class="panel-title">Playlists</h3>

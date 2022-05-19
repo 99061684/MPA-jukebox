@@ -85,10 +85,10 @@ $spotify_client_secret = Session::get('spotify_client_secret');
           <tr>
             <th scope="col">#</th>
             <th scope="col">Title</th>
-            <th scope="col">Genre</th>
             <th scope="col">Artist</th>
             <th scope="col">Band</th>
             <th scope="col">Album</th>
+            <th scope="col">Genre</th>
             <th scope="col">Length</th>
             <th scope="col">play</th>
             <th scope="col">selected</th>
@@ -99,10 +99,10 @@ $spotify_client_secret = Session::get('spotify_client_secret');
             <tr>
                 <th class="clickable" onclick="window.location='{{ route('song.show', $song->id) }}'" scope="row">{{ ($songs->currentPage() - 1)  * $songs->links()->paginator->perPage() + ($key + 1) }}</th>
                 <td class="clickable" onclick="window.location='{{ route('song.show', $song->id) }}'">{{$song->name}}</td>
-                <td class="clickable" onclick="window.location='{{ route('song.show', $song->id) }}'">{{$song->genre->name}}</td>
                 <td class="clickable" onclick="window.location='{{ route('song.show', $song->id) }}'">{{$song->artist}}</td>
                 <td class="clickable" onclick="window.location='{{ route('song.show', $song->id) }}'">{{$song->band}}</td>
                 <td class="clickable" onclick="window.location='{{ route('song.show', $song->id) }}'">{{$song->album}}</td>
+                <td class="clickable" onclick="window.location='{{ route('song.show', $song->id) }}'">{{$song->getGenreNamesString()}}</td>
                 <td class="clickable" onclick="window.location='{{ route('song.show', $song->id) }}'">{{$song->duration}}</td>
                 <td><button class="playbuttonSong" data-song-url="{{$song->song_path}}">play</button></td>
                 <td><form action="{{ route('song.selectSong') }}" method="POST">
@@ -113,11 +113,11 @@ $spotify_client_secret = Session::get('spotify_client_secret');
             @endforeach
             @if (Count($songs) == 0)
             <tr>
-                <td colspan="8">No songs found</td>
+                <td colspan="9">No songs found</td>
             </tr>
-            @else
+            @elseif ($songs->hasPages())
             <tr>
-                <td colspan="8">{{ $songs->links() }}</td>
+                <td colspan="9">{{ $songs->links() }}</td>
             </tr>
             @endif
         </tbody>

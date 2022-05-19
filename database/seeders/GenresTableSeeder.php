@@ -31,8 +31,8 @@ class GenresTableSeeder extends Seeder
                 'image_path' => '',
             ],
             [
-                'name' => 'Hip-Hop',
-                'description' => 'Hip-Hop is een genre van muziek waarin de muziek van de hip-hopbanden wordt gespeeld.',
+                'name' => 'Hip Hop',
+                'description' => 'Hip Hop is een genre van muziek waarin de muziek van de hip-hopbanden wordt gespeeld.',
                 'image_path' => '',
             ],
             [

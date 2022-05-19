@@ -31,11 +31,10 @@ class SongController extends Controller
     public function overview($genreid)
     {
         $genres = Genre::all();
-        $songs = Song::where('genre_id', $genreid)->orderBy('name')->paginate(10);
+        $songs = Genre::find($genreid)->songs()->orderBy('name')->paginate(10);
         return view('Song.index', [
             'songs' => $songs,
-            'genres' => $genres,
-            'genreid' => $genreid
+            'genres' => $genres
         ]);
     }
 
@@ -62,26 +61,28 @@ class SongController extends Controller
         } else if (!Session::has('sortandsearch.order')) {
             Session::put('sortandsearch.order', 'asc');
         }
-
         $searchstring = Session::get('sortandsearch.search');
         $search = explode(' ', $searchstring);
         $genreid = Session::get('sortandsearch.genreid');
         $sort = Session::get('sortandsearch.sort');
         $order = Session::get('sortandsearch.order');
+
         $songs = Song::when($searchstring !== '' && $searchstring !== null, function ($query) use ($search) {
-                foreach ($search as $word) {
-                    if(strlen($word) > 2) {
-                        $query->orWhere('name', 'like', '%' . $word . '%');
-                        $query->orWhere('artist', 'like', '%' . $word . '%');
-                        $query->orWhere('band', 'like', '%' . $word . '%');
-                        $query->orWhere('album', 'like', '%' . $word . '%');
-                    }
+            foreach ($search as $word) {
+                if(strlen($word) > 2) {
+                    $query->orWhere('name', 'like', '%' . $word . '%');
+                    $query->orWhere('artist', 'like', '%' . $word . '%');
+                    $query->orWhere('band', 'like', '%' . $word . '%');
+                    $query->orWhere('album', 'like', '%' . $word . '%');
                 }
-            })->when($genreid !== null, function ($query, $genreid) {
-                return $query->where('genre_id', $genreid);
-            })
-            ->orderBy($sort, $order)
-            ->paginate(10);
+            }
+        })->when($genreid !== null, function ($query) use ($genreid) {
+            return $query->whereHas('genres', function($query) use ($genreid) {
+                $query->where('genre_id', $genreid);
+            });
+        })
+        ->orderBy($sort, $order)
+        ->paginate(10);
         return view('Song.index', [
             'songs' => $songs,
             'genres' => $genres,

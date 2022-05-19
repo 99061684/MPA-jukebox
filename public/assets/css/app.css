@@ -1,4 +1,46 @@
+/* algemeen */
+.grid {
+    display: grid;
+}
 
-/* body {
-    background-color: goldenrod;
-} */
+.full-size-image {
+    width: 100%;
+    height: auto;
+}
+
+/* playlist show page */
+.detail .left {
+    width: 300px;
+    margin-right: 20px;
+    float: left;
+}
+
+.detail .left, .detail .right {
+    display: table-cell;
+}
+
+.fa-ul {
+    list-style-type: none;
+}
+
+.detail .stats {
+    border: 2px solid black;
+}
+
+.stats li, .right p {
+    font-family: Verdana, Geneva, sans-serif;
+}
+
+.stats h1 {
+    text-align: center;
+}
+.playlist-show-button-div a, .playlist-show-button-div form {
+    display: inline-block;
+    margin-left: 5px;
+    margin-bottom: 5px;
+}
+
+.playlist-show-button-div {
+    display: flex;
+    justify-content: center;
+}

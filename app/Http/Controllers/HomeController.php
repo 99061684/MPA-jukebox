@@ -26,9 +26,6 @@ class HomeController extends Controller
      */
     public function index()
     {
-        if (!Session::has('spotify_client_id') && !Session::has('spotify_client_secret')) {
-            // put session spotify keys in session
-        }
         $playlists = Playlist::where('user_id', Auth::id())->get();
         return view('home', [
             'playlists' => $playlists

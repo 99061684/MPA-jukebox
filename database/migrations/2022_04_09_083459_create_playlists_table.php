@@ -17,6 +17,8 @@ class CreatePlaylistsTable extends Migration
             $table->id();
             $table->string('name');
             $table->mediumText('description');
+            $table->string('color')->default('yellowgreen');
+            $table->string('image_path')->nullable()->default('default_playlist.jpg');
             $table->boolean('public')->default(false);
             $table->bigInteger('user_id')->unsigned();
             $table->timestamps();

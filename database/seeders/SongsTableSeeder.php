@@ -6,7 +6,6 @@ use App\Models\Genre;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use App\Models\Song;
-use FFI\Exception;
 use Illuminate\Database\QueryException;
 
 class SongsTableSeeder extends Seeder
@@ -18,7 +17,6 @@ class SongsTableSeeder extends Seeder
      */
     public function run()
     {
-        // make song foreach row in muziek data.csv wih the following columns: name, artist, album, duration, song_path, genre_id
         $data = [];
         $file = fopen(storage_path('app/public/muziek.csv'), 'r');
         while (($row = fgetcsv($file, null, ';')) !== false) {
@@ -34,48 +32,36 @@ class SongsTableSeeder extends Seeder
                 'duration' => Carbon::createFromFormat('H:i:s', $this->formatSeconds($row[9])),
                 'song_path' => trim($trackurl),
                 'unique_hash' => md5($row[1] . $row[2] . $row[6] . $row[4]),
-                // 'genre_id' => Genre::where('name', '=', $row[5])->get()->first()->id
-                'genre_id' => Genre::where('name', '=', 'pop')->get()->first()->id
+                'genres' => array_merge(array_map(fn($item) => ['name' => ucwords($item)], explode(',', $row[11])))
             ];
         }
+
         fclose($file);
 
-        // $data = [
-        //     [
-        //         'name' => 'Ice Ice Baby',
-        //         'artist' => 'Vannilla Ice',
-        //         'album' => 'Vannilla Ice Is Back! - Hip Hop Classics',
-        //         'duration' => Carbon::createFromFormat('H:i:s', '0:04:14'),
-        //         'song_path' => 'https://open.spotify.com/embed/track/3XVozq1aeqsJwpXrEZrDJ9?si=6647a6926a794066',
-        //         'genre_id' => Genre::where('name', '=', 'Hip-Hop')->get()->first()->id
-        //     ],
-        //     [
-        //         'name' => 'Mr. Blue Sky',
-        //         'artist' => 'Louis Clark',
-        //         'band' => 'Electric Light Orchestra',
-        //         'album' => 'Out of the Blue',
-        //         'duration' => Carbon::createFromFormat('H:i:s', '0:05:03'),
-        //         'song_path' => 'https://open.spotify.com/embed/track/2RlgNHKcydI9sayD2Df2xp?si=86f76e3661164b86',
-        //         'genre_id' => Genre::where('name', '=', 'Pop')->get()->first()->id
-        //     ],
-        //     [
-        //         'name' => 'Classic',
-        //         'artist' => 'MKTO',
-        //         'album' => 'MKTO',
-        //         'duration' => Carbon::createFromFormat('H:i:s', '0:02:55'),
-        //         'song_path' => 'https://open.spotify.com/embed/track/6FE2iI43OZnszFLuLtvvmg?si=047227ab759d419e',
-        //         'genre_id' => Genre::where('name', '=', 'Pop')->get()->first()->id
-        //     ]
-        // ];
-
-        foreach ($data as $key => $value) {
+        foreach ($data as $value) {
             try {
-                Song::create($value);
-            } catch (QueryException $e){
-                $errorCode = $e->errorInfo[1];
-                if($errorCode !== 1062){
-                    throw $e;
+                $song = Song::where('unique_hash', '=', $value['unique_hash'])->get()->first();
+                if ($song !== null) {
+                    continue;
                 }
+                if (isset($value['genres'])) {
+                    $genres = $value['genres'];
+                    unset($value['genres']);
+                } else {
+                    $genres = [];
+                }
+                $song = Song::create($value);
+                if ($genres !== null) {
+                    foreach ($genres as $value) {
+                        $genre = Genre::where('name', $value['name'])->get()->first();
+                        if ($genre == null) {
+                            $genre = Genre::factory()->create(['name' => $value['name']]);
+                        }
+                        $song->genres()->attach($genre->id);
+                    }
+                }
+            } catch (QueryException $e){
+                throw $e;
             }
         }
     }

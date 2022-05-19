@@ -37,6 +37,11 @@
                                     <a class="nav-link" href="{{ route('home') }}">Home</a>
                                 </li>
                             @endif
+                            @if (Route::has('genre.index'))
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('genre.index') }}">Genres</a>
+                                </li>
+                            @endif
                             @if (Route::has('song.overviewAll'))
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ route('song.overviewAll') }}">Songs</a>

@@ -8,7 +8,7 @@ $spotify_client_secret = Session::get('spotify_client_secret');
     <div class="container">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h3 class="panel-title">{{ $song->name }}</h3>
+                <h1 class="panel-title">{{ $song->name }}</h1>
             </div>
             <div class="panel-body">
                 <div class="row">
@@ -25,18 +25,6 @@ $spotify_client_secret = Session::get('spotify_client_secret');
                     <div class="col-md-6">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title">Genre</h3>
-                            </div>
-                            <div class="panel-body">
-                                <p>{{ $song->genre->name }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
                                 <h3 class="panel-title">Album</h3>
                             </div>
                             <div class="panel-body">
@@ -44,18 +32,18 @@ $spotify_client_secret = Session::get('spotify_client_secret');
                             </div>
                         </div>
                     </div>
+                </div>
+                <div class="row">
                     <div class="col-md-6">
                         <div class="panel panel-default">
                             <div class="panel-heading">
-                                <h3 class="panel-title">Year</h3>
+                                <h3 class="panel-title">Genre</h3>
                             </div>
                             <div class="panel-body">
-                                <p>{{ $song->year }}</p>
+                                <p>{{ $song->getGenreNamesString() }}</p>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="row">
                     <div class="col-md-6">
                         <div class="panel panel-default">
                             <div class="panel-heading">
@@ -63,16 +51,6 @@ $spotify_client_secret = Session::get('spotify_client_secret');
                             </div>
                             <div class="panel-body">
                                 <p>{{ $song->duration }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title">Rating</h3>
-                            </div>
-                            <div class="panel-body">
-                                <p>{{ $song->rating }}</p>
                             </div>
                         </div>
                     </div>

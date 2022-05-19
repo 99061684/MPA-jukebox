@@ -27,7 +27,7 @@ use App\Models\SongSession;
             <tr>
                 <th class="clickable" onclick="window.location='{{ route('song.show', $song->id) }}'" scope="row">{{ ($songs->currentPage() - 1)  * $songs->links()->paginator->perPage() + ($key + 1) }}</th>
                 <td class="clickable" onclick="window.location='{{ route('song.show', $song->id) }}'">{{$song->name}}</td>
-                <td class="clickable" onclick="window.location='{{ route('song.show', $song->id) }}'">{{$song->genre->name}}</td>
+                <td class="clickable" onclick="window.location='{{ route('song.show', $song->id) }}'">{{$song->getGenreNamesString()}}</td>
                 <td class="clickable" onclick="window.location='{{ route('song.show', $song->id) }}'">{{$song->artist}}</td>
                 <td class="clickable" onclick="window.location='{{ route('song.show', $song->id) }}'">{{$song->band}}</td>
                 <td class="clickable" onclick="window.location='{{ route('song.show', $song->id) }}'">{{$song->album}}</td>
@@ -43,12 +43,11 @@ use App\Models\SongSession;
             <tr>
                 <td colspan="8">No songs found</td>
             </tr>
-            @else
+            @elseif ($songs->hasPages())
             <tr>
                 <td colspan="8">{{ $songs->links() }}</td>
             </tr>
             @endif
-
         </tbody>
     </table>
 

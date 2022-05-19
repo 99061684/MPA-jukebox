@@ -12,13 +12,28 @@ class Song extends Model
 {
     use HasFactory;
 
-    public function genre()
+    public function genres()
     {
-        return $this->belongsTo(Genre::class);
+        return $this->belongsToMany(Genre::class);
     }
 
     public function playlists()
     {
         return $this->belongsToMany(Playlist::class);
+    }
+
+    public function getGenreNames()
+    {
+        $genres = $this->genres()->get();
+        $genreNames = [];
+        foreach ($genres as $genre) {
+            $genreNames[] = $genre->name;
+        }
+        return $genreNames;
+    }
+
+    public function getGenreNamesString()
+    {
+        return implode(", ", $this->getGenreNames());
     }
 }

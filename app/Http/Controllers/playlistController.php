@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Song;
 use App\Models\SongSession;
+use App\Rules\NamePattern;
 
 class playlistController extends Controller
 {
@@ -28,7 +29,8 @@ class playlistController extends Controller
      */
     public function create()
     {
-        return view('playlist.create');
+        $hasSongs = SongSession::hasSongs();
+        return response()->view('playlist.create', ['hasSongs' => $hasSongs]);
     }
 
     public function store(Request $request)
@@ -71,7 +73,8 @@ class playlistController extends Controller
         }
         $songs = $playlist->songs()->orderBy('name', 'asc')->paginate(10);
         $hasSongs = SongSession::hasSongs();
-        return response()->view('playlist.show', ['playlist' => $playlist, 'songs' => $songs, 'hasSongs' => $hasSongs]);
+        $username = $playlist->user()->first()->name;
+        return response()->view('playlist.show', ['playlist' => $playlist, 'songs' => $songs, 'hasSongs' => $hasSongs, 'username' => $username]);
     }
 
     public function addtoplaylist(Request $request)
@@ -144,7 +147,11 @@ class playlistController extends Controller
      */
     public function edit($id)
     {
-        //
+        $playlist = Playlist::where('id', $id)->where('user_id', Auth::user()->id)->first();
+        if ($playlist == null) {
+            return redirect()->route('home')->with('errors', ['Playlist not found.']);
+        }
+        return response()->view('playlist.edit', ['playlist' => $playlist]);
     }
 
     /**
@@ -154,19 +161,52 @@ class playlistController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        //
+        $idValidator = Validator::make($request->all(), [
+            'id' => 'required|integer|exists:playlists,id'
+        ]);
+        if ($idValidator->fails()) {
+            return redirect()->route('home')->with('errors', ['Not a valid playlist id.']);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name' => ['required', 'max:255', new NamePattern()],
+            'description' => 'required',
+            'public' => 'required|boolean'
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->route('playlist.edit', $request->input('id'))->with('inputData', $request->all())->withErrors($validator, 'errors');
+        } else {
+            $playlist = Playlist::where('id', $request->input('id'))->where('user_id', Auth::user()->id)->first();
+            if ($playlist == null) {
+                return redirect()->route('home')->with('errors', ['Playlist not found.']);
+            }
+            $playlist->name = $request->name;
+            $playlist->description = $request->description;
+            $playlist->public = $request->public;
+            $playlist->save();
+            return redirect()->route('playlist.show', $request->input('id'));
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
+    public function destroy(Request $request)
     {
-        //
+        $idValidator = Validator::make($request->all(), [
+            'id' => 'required|integer|exists:playlists,id'
+        ]);
+        if ($idValidator->fails()) {
+            return redirect()->route('home')->with('errors', ['Not a valid playlist id.']);
+        }
+        //destroy playlist if exists and is owned by user
+        $playlist = Playlist::where('id', $request->input('id'))->where('user_id', Auth::user()->id)->first();
+        if ($playlist == null) {
+            return redirect()->back()->with('error', ['Playlist not found.']);
+        }
+        //detach all songs from playlist
+        $playlist->songs()->detach();
+        $playlist->delete();
+        return redirect()->route('home');
     }
 }

@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\SongController;
 use App\Http\Controllers\GenreController;
-use Illuminate\Contracts\Session\Session;
 use App\Http\Controllers\FallbackController;
 use App\Http\Controllers\playlistController;
 
@@ -37,11 +36,15 @@ Route::group(['middleware' => ['auth']], function() { // routes when user is log
     });
 
     Route::prefix('/playlist')->group(function () {
-        Route::get('/', [playlistController::class, 'create'])->name('playlist.create');
-        Route::post('/', [playlistController::class, 'store'])->name('playlist.store');
-        Route::get('/{id}', [playlistController::class, 'show'])->whereNumber('id')->name('playlist.show');
+        Route::get('/show/{id}', [playlistController::class, 'show'])->whereNumber('id')->name('playlist.show');
         Route::post('/addtoplaylist/', [playlistController::class, 'addtoplaylist'])->name('playlist.addSongs');
         Route::post('/removefromplaylist/', [playlistController::class, 'removefromplaylist'])->name('playlist.removeSongs');
+
+        Route::get('/create/', [playlistController::class, 'create'])->name('playlist.create');
+        Route::post('/store/', [playlistController::class, 'store'])->name('playlist.store');
+        Route::get('/edit/{id}', [playlistController::class, 'edit'])->whereNumber('id')->name('playlist.edit');
+        Route::post('/update/', [playlistController::class, 'update'])->name('playlist.update');
+        Route::post('/destroy/', [playlistController::class, 'destroy'])->name('playlist.destroy');
     });
 
     Route::get('/home', [HomeController::class, 'index'])->name('home');
@@ -58,5 +61,3 @@ if (Auth::guest()) { //when user is not logged in
 } else {
     Route::fallback([FallbackController::class, 'fallback2']);
 }
-
-
