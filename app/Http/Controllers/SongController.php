@@ -22,20 +22,40 @@ class SongController extends Controller
     {
         $genres = Genre::all();
         $songs = Song::orderBy('name')->paginate(10);
-        return view('Song.index', [
-            'songs' => $songs,
-            'genres' => $genres
-        ]);
+        $spotify_client_id = Session::get('spotify_client_id');
+        $spotify_client_secret = Session::get('spotify_client_secret');
+
+        Session::put('sortandsearch.search', null);
+        Session::put('sortandsearch.genreid', null);
+        Session::put('sortandsearch.sort', 'name');
+        Session::put('sortandsearch.order', 'asc');
+
+        $search = Session::get('sortandsearch.search');
+        $genreid = Session::get('sortandsearch.genreid');
+        $sort = Session::get('sortandsearch.sort');
+        $order = Session::get('sortandsearch.order');
+
+        return response()->view('song.index', ['songs' => $songs, 'genres' => $genres, 'search' => $search, 'genreid' => $genreid, 'sort' => $sort, 'order' => $order, 'spotify_client_id' => $spotify_client_id, 'spotify_client_secret' => $spotify_client_secret]);
     }
 
     public function overview($genreid)
     {
         $genres = Genre::all();
         $songs = Genre::find($genreid)->songs()->orderBy('name')->paginate(10);
-        return view('Song.index', [
-            'songs' => $songs,
-            'genres' => $genres
-        ]);
+        $spotify_client_id = Session::get('spotify_client_id');
+        $spotify_client_secret = Session::get('spotify_client_secret');
+
+        Session::put('sortandsearch.search', null);
+        Session::put('sortandsearch.genreid', $genreid);
+        Session::put('sortandsearch.sort', 'name');
+        Session::put('sortandsearch.order', 'asc');
+
+        $search = Session::get('sortandsearch.search');
+        $genreid = Session::get('sortandsearch.genreid');
+        $sort = Session::get('sortandsearch.sort');
+        $order = Session::get('sortandsearch.order');
+
+        return response()->view('song.index', ['songs' => $songs, 'genres' => $genres, 'search' => $search, 'genreid' => $genreid, 'sort' => $sort, 'order' => $order, 'spotify_client_id' => $spotify_client_id, 'spotify_client_secret' => $spotify_client_secret]);
     }
 
     public function sortandsearch(Request $request)
@@ -66,6 +86,8 @@ class SongController extends Controller
         $genreid = Session::get('sortandsearch.genreid');
         $sort = Session::get('sortandsearch.sort');
         $order = Session::get('sortandsearch.order');
+        $spotify_client_id = Session::get('spotify_client_id');
+        $spotify_client_secret = Session::get('spotify_client_secret');
 
         $songs = Song::when($searchstring !== '' && $searchstring !== null, function ($query) use ($search) {
             foreach ($search as $word) {
@@ -83,13 +105,15 @@ class SongController extends Controller
         })
         ->orderBy($sort, $order)
         ->paginate(10);
-        return view('Song.index', [
+        response()->view('song.index', [
             'songs' => $songs,
             'genres' => $genres,
-            'genreid' => $genreid,
             'search' => $searchstring,
+            'genreid' => $genreid,
             'sort' => $sort,
-            'order' => $order
+            'order' => $order,
+            'spotify_client_id' => $spotify_client_id,
+            'spotify_client_secret' => $spotify_client_secret
         ]);
     }
 
@@ -190,9 +214,10 @@ class SongController extends Controller
      */
     public function show($id)
     {
-        return view('Song.show', [
-            'song' => Song::find($id)
-        ]);
+        $song = Song::find($id);
+        $spotify_client_id = Session::get('spotify_client_id');
+        $spotify_client_secret = Session::get('spotify_client_secret');
+        return response()->view('song.show', ['song' => $song, 'spotify_client_id' => $spotify_client_id, 'spotify_client_secret' => $spotify_client_secret]);
     }
 
     /**

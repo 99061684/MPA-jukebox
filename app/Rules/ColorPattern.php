@@ -4,7 +4,7 @@ namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
 
-class NamePattern implements Rule
+class ColorPattern implements Rule
 {
     public function __construct()
     {
@@ -20,7 +20,10 @@ class NamePattern implements Rule
      */
     public function passes($attribute, $value)
     {
-        return preg_match('/^[a-zA-Z0-9_\-., ?!]+$/', $value);
+        if($value !== null && preg_match('/#([[:xdigit:]]{3}){1,2}\b/', $value)) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -30,6 +33,6 @@ class NamePattern implements Rule
      */
     public function message()
     {
-        return 'Not a valid :attribute. only letters, numbers, spaces, and some special characters are allowed.';
+        return 'Not a valid color pattern, :attribute.';
     }
 }

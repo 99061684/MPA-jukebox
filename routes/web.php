@@ -35,16 +35,20 @@ Route::group(['middleware' => ['auth']], function() { // routes when user is log
         Route::get('/', [GenreController::class, 'index'])->name('genre.index');
     });
 
+
     Route::prefix('/playlist')->group(function () {
-        Route::get('/show/{id}', [playlistController::class, 'show'])->whereNumber('id')->name('playlist.show');
-        Route::post('/addtoplaylist/', [playlistController::class, 'addtoplaylist'])->name('playlist.addSongs');
-        Route::post('/removefromplaylist/', [playlistController::class, 'removefromplaylist'])->name('playlist.removeSongs');
+        Route::group(['middleware' => ['ownsPlaylist']], function() {
+            Route::get('/show/{id}', [playlistController::class, 'show'])->whereNumber('id')->name('playlist.show');
+            Route::post('/addtoplaylist/', [playlistController::class, 'addtoplaylist'])->name('playlist.addSongs');
+            Route::post('/removefromplaylist/', [playlistController::class, 'removefromplaylist'])->name('playlist.removeSongs');
+            
+            Route::get('/edit/{id}', [playlistController::class, 'edit'])->whereNumber('id')->name('playlist.edit');
+            Route::post('/update/', [playlistController::class, 'update'])->name('playlist.update');
+            Route::post('/destroy/', [playlistController::class, 'destroy'])->name('playlist.destroy');
+        });
 
         Route::get('/create/', [playlistController::class, 'create'])->name('playlist.create');
         Route::post('/store/', [playlistController::class, 'store'])->name('playlist.store');
-        Route::get('/edit/{id}', [playlistController::class, 'edit'])->whereNumber('id')->name('playlist.edit');
-        Route::post('/update/', [playlistController::class, 'update'])->name('playlist.update');
-        Route::post('/destroy/', [playlistController::class, 'destroy'])->name('playlist.destroy');
     });
 
     Route::get('/home', [HomeController::class, 'index'])->name('home');

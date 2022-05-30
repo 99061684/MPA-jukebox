@@ -25,7 +25,11 @@ class DescriptionPattern implements Rule
      */
     public function passes($attribute, $value)
     {
-        return preg_match('/^[a-zA-Z0-9_\-., ?!""\'()]+$/', $value);
+        if($value !== null) {
+            return preg_match('/^[a-zA-Z0-9_\-., ?!""\'()]+$/', $value);
+        } else {
+            return true;
+        }
     }
 
     /**
@@ -35,6 +39,6 @@ class DescriptionPattern implements Rule
      */
     public function message()
     {
-        return 'Not al valid :attribute. only letters, numbers, spaces, and some special characters are allowed.';
+        return 'Not a valid :attribute. only letters, numbers, spaces, and some special characters are allowed.';
     }
 }

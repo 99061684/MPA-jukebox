@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SongSession;
+use App\Models\Song;
 use App\Models\Playlist;
+use App\Rules\NamePattern;
+use App\Rules\ColorPattern;
+use App\Rules\DescriptionPattern;
+use App\Rules\BooleanRule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
-use App\Models\Song;
-use App\Models\SongSession;
-use App\Rules\NamePattern;
 
 class playlistController extends Controller
 {
@@ -36,23 +38,29 @@ class playlistController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|max:255',
-            'description' => 'required',
-            'public' => 'required|boolean',
-            'addSelected' => 'required|boolean'
+            'name' => ['bail', 'required', 'max:255', new NamePattern()],
+            'description' => [new DescriptionPattern()],
+            'color' => ['bail', 'required', new ColorPattern()],
+            'public' => ['bail', 'required', new BooleanRule()],
+            'addSelected' => ['bail', 'required', new BooleanRule()]
         ]);
 
         if ($validator->fails()) {
-            return Redirect::route('playlist.create')->with('inputData', $request->all())->withErrors($validator);
+            $hasSongs = SongSession::hasSongs();
+            return response()->view('playlist.create', ['hasSongs' => $hasSongs, 'inputData' => $request->all(), 'ValidationErrors' => $validator->errors()->getMessages()]);
+        }
+        if ($request->description === null) {
+            $request->description = '';
         }
 
         $playlist = new Playlist();
         $playlist->name = $request->name;
         $playlist->description = $request->description;
+        $playlist->color = $request->color;
         $playlist->public = $request->public;
         $playlist->user_id = Auth::user()->id;
         $playlist->save();
-        if ($request->input('addSelected') == true) {
+        if (filter_var($request->addSelected, FILTER_VALIDATE_BOOLEAN)) {
             $playlist->songs()->attach(SongSession::getSongsid());
         }
         return (new HomeController)->index();
@@ -171,20 +179,26 @@ class playlistController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'name' => ['required', 'max:255', new NamePattern()],
-            'description' => 'required',
-            'public' => 'required|boolean'
+            'name' => ['bail', 'required', 'max:255', new NamePattern()],
+            'description' => [new DescriptionPattern()],
+            'color' => ['bail', 'required', new ColorPattern()],
+            'public' => ['bail', 'required', new BooleanRule()],
+            'addSelected' => ['bail', 'required', new BooleanRule()]
         ]);
 
         if ($validator->fails()) {
-            return redirect()->route('playlist.edit', $request->input('id'))->with('inputData', $request->all())->withErrors($validator, 'errors');
+            return redirect()->route('playlist.edit', $request->input('id'))->with('playlist', $request->all())->withErrors($validator, 'errors');
         } else {
             $playlist = Playlist::where('id', $request->input('id'))->where('user_id', Auth::user()->id)->first();
             if ($playlist == null) {
                 return redirect()->route('home')->with('errors', ['Playlist not found.']);
             }
+            if ($request->description === null) {
+                $request->description = '';
+            }
             $playlist->name = $request->name;
             $playlist->description = $request->description;
+            $playlist->color = $request->color;
             $playlist->public = $request->public;
             $playlist->save();
             return redirect()->route('playlist.show', $request->input('id'));

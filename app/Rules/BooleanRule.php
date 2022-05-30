@@ -4,7 +4,7 @@ namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
 
-class NamePattern implements Rule
+class BooleanRule implements Rule
 {
     public function __construct()
     {
@@ -20,7 +20,12 @@ class NamePattern implements Rule
      */
     public function passes($attribute, $value)
     {
-        return preg_match('/^[a-zA-Z0-9_\-., ?!]+$/', $value);
+        return is_bool($this->to_boolean($value));
+    }
+
+    public function to_boolean($booleable)
+    {
+        return filter_var($booleable, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
     }
 
     /**
@@ -30,6 +35,6 @@ class NamePattern implements Rule
      */
     public function message()
     {
-        return 'Not a valid :attribute. only letters, numbers, spaces, and some special characters are allowed.';
+        return __('validation.boolean');
     }
 }

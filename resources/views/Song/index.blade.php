@@ -3,20 +3,6 @@
 @section('content')
 <?php
 use App\Models\SongSession;
-if(!isset($search)) {
-    $search = null;
-}
-if(!isset($genreid)) {
-    $genreid = null;
-}
-if(!isset($genres)) {
-    $genres = [];
-}
-$sort = request()->input('sort');
-$order = request()->input('order');
-
-$spotify_client_id = Session::get('spotify_client_id');
-$spotify_client_secret = Session::get('spotify_client_secret');
 ?>
 <div class="container">
     <h1>Songs</h1>
@@ -58,7 +44,7 @@ $spotify_client_secret = Session::get('spotify_client_secret');
                         <div class="form-group">
                             <label for="sort">Sort</label>
                             <select class="form-control" id="sort" name="sort">
-                                <option value="name" {{ $sort == 'title' ? 'selected' : '' }}>Title</option>
+                                <option value="name" {{ $sort == 'name' ? 'selected' : '' }}>Name</option>
                                 <option value="artist" {{ $sort == 'artist' ? 'selected' : '' }}>Artist</option>
                                 <option value="genre" {{ $sort == 'genre' ? 'selected' : '' }}>Genre</option>
                                 <option value="year" {{ $sort == 'year' ? 'selected' : '' }}>Year</option>

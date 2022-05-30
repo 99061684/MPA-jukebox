@@ -16,8 +16,8 @@ class CreatePlaylistsTable extends Migration
         Schema::create('playlists', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->mediumText('description');
-            $table->string('color')->default('yellowgreen');
+            $table->mediumText('description')->default('No description');
+            $table->string('color')->default('#9acd32');
             $table->string('image_path')->nullable()->default('default_playlist.jpg');
             $table->boolean('public')->default(false);
             $table->bigInteger('user_id')->unsigned();

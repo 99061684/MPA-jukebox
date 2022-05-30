@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\PlaylistSong;
 use App\Models\Song;
 use Illuminate\Support\Carbon;
 class Playlist extends Model
